@@ -1,0 +1,39 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: api-gateaway-sys-2
+  threads:
+    virtual:
+      enabled: true
+  cloud:
+    gateway:
+      mvc:
+        discovery:
+          locator:
+            enabled: true
+            lower-case-service-id: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: https://kyfjhyibpcipywtvdalk.supabase.co/auth/v1/.well-known/jwks.json
+          jws-algorithms: ES256
+
+eureka:
+  client:
+    service-url:
+
+      defaultZone: http://admin:password123@${EUREKA_HOST:localhost}:8761/eureka
+    register-with-eureka: true
+    fetch-registry: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,gateway,info
+  endpoint:
+    health:
+      show-details: always
