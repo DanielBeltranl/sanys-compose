@@ -1,0 +1,37 @@
+@keyframes backdrop-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes check-draw {
+  from { stroke-dashoffset: 60; }
+  to   { stroke-dashoffset: 0; }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.success-backdrop {
+  animation: backdrop-in 0.25s ease forwards;
+}
+
+.success-card {
+  animation: card-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
+}
+
+.success-check {
+  stroke-dasharray: 60;
+  stroke-dashoffset: 60;
+  animation: check-draw 0.5s ease 0.4s forwards;
+}
+
+.success-text {
+  animation: fade-up 0.4s ease 0.7s both;
+}
