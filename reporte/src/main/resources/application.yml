@@ -1,0 +1,52 @@
+spring:
+  application:
+    name: api-reporte
+  datasource:
+    url: jdbc:postgresql://aws-1-sa-east-1.pooler.supabase.com:5432/postgres?sslmode=require&socketTimeout=30
+    username: postgres.kyfjhyibpcipywtvdalk
+    password: ${SUPABASE_DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 2  # Blindaje para evitar agotar las conexiones de Supabase
+      minimum-idle: 1
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  open-in-view: false
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: 5672
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+
+server:
+  port: 8086
+
+supabase:
+  url: https://kyfjhyibpcipywtvdalk.supabase.co
+  anon-key: ${SUPABASE_ANON_KEY}
+  service-role-key: ${SUPABASE_SERVICE_ROLE_KEY}
+  jwks-uri: https://kyfjhyibpcipywtvdalk.supabase.co/auth/v1/.well-known/jwks.json
+
+locationiq:
+  api-key: pk.2e92838d440f2603cc598bce80e25847
+
+eureka:
+  client:
+    service-url:
+      # CAMBIADO: Se conecta dinámicamente al contenedor de Eureka usando la variable unificada
+      defaultZone: http://admin:password123@${EUREKA_HOST:localhost}:8761/eureka
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+
+logging:
+  level:
+    root: INFO
+    cl.sanosysalvos.reporte: DEBUG
+    org.springframework.security: DEBUG
