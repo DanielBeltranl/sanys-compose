@@ -1,0 +1,1 @@
+org.springframework.boot.env.EnvironmentPostProcessor=cl.sys.bff.bfffsanys.config.DotEnvProcessor
