@@ -1,0 +1,174 @@
+services:
+  # --- INFRAESTRUCTURA CORE ---
+  eureka-server:
+    build:
+      context: ./discovery-service-sanys/discovery-service
+      dockerfile: Dockerfile
+    container_name: eureka-server
+    expose:
+      - "8761"
+    ports:
+      - "8761:8761"
+    environment:
+      - EUREKA_HOSTNAME=eureka-server
+    networks:
+      - sanos-y-salvos-net
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: rabbitmq-broker
+    expose:
+      - "5672"
+    ports:
+      - "15672:15672"
+    networks:
+      - sanos-y-salvos-net
+    restart: unless-stopped
+
+  # --- MICROSERVICIOS DE NEGOCIO ---
+  api-registro:
+    build:
+      context: ./api-registro-sanys
+      dockerfile: Dockerfile
+    container_name: api-registro
+    expose:
+      - "8080"
+    environment:
+      - EUREKA_HOST=eureka-server
+    env_file:
+      - .env
+    depends_on:
+      eureka-server:
+        condition: service_started
+    networks:
+      - sanos-y-salvos-net
+    restart: unless-stopped
+
+  api-reporte:
+    build:
+      context: ./reporte
+      dockerfile: Dockerfile
+    container_name: api-reporte
+    expose:
+      - "8086"
+    environment:
+      - EUREKA_HOST=eureka-server
+      - RABBITMQ_HOST=rabbitmq
+    env_file:
+      - .env
+    depends_on:
+      eureka-server:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+    networks:
+      - sanos-y-salvos-net
+    restart: unless-stopped
+
+  api-coincidencias:
+    build:
+      context: ./MS-Coincidencias
+      dockerfile: Dockerfile
+    container_name: api-coincidencias
+    expose:
+      - "8087"
+    ports:
+      - "8087:8087"
+    environment:
+      - EUREKA_HOST=eureka-server
+      - RABBITMQ_HOST=rabbitmq
+    env_file:
+      - .env
+    depends_on:
+      eureka-server:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+    networks:
+      - sanos-y-salvos-net
+    restart: unless-stopped
+
+  api-notificaciones:
+    build:
+      context: /home/danielbeltran/sanos-y-salvos/notification-ms
+      dockerfile: Dockerfile
+    container_name: api-notificaciones
+    expose:
+      - "8083"
+    ports:
+      - "8083:8083"
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - SUPABASE_DB_PASSWORD=${SUPABASE_DB_PASSWORD}
+    env_file:
+      - .env
+    depends_on:
+      eureka-server:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+    networks:
+      - sanos-y-salvos-net
+    restart: unless-stopped
+
+  # --- CAPA PERIMETRAL (ENTRADA Y RUTEO) ---
+  api-gateway:
+    build:
+      context: ./api-getaway-sayns
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    expose:
+      - "8081"
+    ports:
+      - "8081:8081"
+    environment:
+      - EUREKA_HOST=eureka-server
+    depends_on:
+      eureka-server:
+        condition: service_started
+    networks:
+      - sanos-y-salvos-net
+    restart: unless-stopped
+
+  bff-sanys:
+    build:
+      context: ./bfff-sanys
+      dockerfile: Dockerfile
+    container_name: bff-sanys
+    expose:
+      - "8090"
+    ports:
+      - "8090:8090"
+    environment:
+      - EUREKA_HOST=eureka-server
+      - GATEWAY_HOST=api-gateway
+    env_file:
+      - .env
+    depends_on:
+      eureka-server:
+        condition: service_started
+      api-gateway:
+        condition: service_started
+    networks:
+      - sanos-y-salvos-net
+    restart: unless-stopped
+
+  # --- CAPA DE PRESENTACIÓN (FRONTEND) ---
+  frontend-sanys:
+    build:
+      context: /home/danielbeltran/sanos-y-salvos/sanos-y-salvos-front/sanos-y-salvos
+      dockerfile: Dockerfile
+    container_name: frontend-sanys
+    ports:
+      - "3000:80"
+    networks:
+      - sanos-y-salvos-net
+    depends_on:
+      api-gateway:
+        condition: service_started
+    restart: unless-stopped
+
+networks:
+  sanos-y-salvos-net:
+    driver: bridge
